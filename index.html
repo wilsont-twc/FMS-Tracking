@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V33.2</title>
+<title>Residency Master Scheduler V33.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -143,22 +143,32 @@ function handleAuth() {
 async function loadFromCloud() {
     try {
         const r = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': API_KEY }});
-        const res = await r.json(); masterData = res.record; findCurBlk(); renderCalendar();
+        const res = await r.json(); 
+        if(res.record) {
+            masterData = res.record; 
+            findCurBlk(); 
+            renderCalendar();
+        }
     } catch(e) { console.error("Cloud Error", e); }
 }
 
 async function saveToCloud() {
     if(!isAdmin) return;
     try {
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        const r = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
             body: JSON.stringify(masterData)
         });
-        alert("Published Successfully!");
-    } catch(e) { alert("Network error."); }
+        if(r.ok) alert("Published Successfully!");
+        else throw new Error("Cloud Save Failed");
+    } catch(e) { alert("Network error. Could not publish."); }
 }
 
-function getYD() { if(!masterData[curYear]) masterData[curYear] = {sched:{}, rost:{atts:[],ress:[],blks:[],rules:[]}, hub:{services:[],blockAssignments:{},blockPTO:{}}}; return masterData[curYear]; }
+function getYD() { 
+    if(!masterData[curYear]) masterData[curYear] = {sched:{}, rost:{atts:[],ress:[],blks:[],rules:[]}, hub:{services:[],blockAssignments:{},blockPTO:{}}}; 
+    return masterData[curYear]; 
+}
+
 function findCurBlk() {
     const today = new Date().toISOString().split('T')[0];
     const blks = getYD().rost.blks;
@@ -171,17 +181,7 @@ function setView(v) { currentView = v; document.getElementById('monthBtn').class
 function nav(dir) { if(currentView === 'month') curDate.setMonth(curDate.getMonth() + dir); else currentBlockIdx = Math.max(0, Math.min(getYD().rost.blks.length - 1, currentBlockIdx + dir)); renderCalendar(); }
 function changeYear() { curYear = document.getElementById('yearSelect').value; findCurBlk(); renderCalendar(); }
 
-// --- HUB SPEED ENTRY + DATE FIXES ---
-function addServiceCard(s={name:'',log:''}) {
-    const d = document.createElement('div'); d.className = 'service-card';
-    d.innerHTML = `
-        <button class="remove-btn admin-only" style="position:absolute; top:12px; right:12px;" onclick="this.parentElement.remove()">×</button>
-        <input type="text" class="s-name" value="${s.name}" placeholder="Service Name" onkeyup="if(event.key==='Enter') this.parentElement.querySelector('textarea').focus()">
-        <textarea class="s-log" placeholder="Notes (Enter for new card)" onkeyup="if(event.key==='Enter' && !event.shiftKey && isAdmin) { addServiceCard(); event.preventDefault(); }">${s.log||''}</textarea>`;
-    document.getElementById('hub-service-list').appendChild(d);
-    if(isAdmin && !s.name) d.querySelector('.s-name').focus();
-}
-
+// --- HUB LOGIC ---
 function getBlockDates() {
     const yd = getYD();
     const b = yd.rost.blks[currentBlockIdx];
@@ -200,10 +200,21 @@ function getBlockDates() {
     return {start: b.start, end: endStr};
 }
 
+function addServiceCard(s={name:'',log:''}) {
+    const d = document.createElement('div'); d.className = 'service-card';
+    d.innerHTML = `
+        <button class="remove-btn admin-only" style="position:absolute; top:12px; right:12px;" onclick="this.parentElement.remove()">×</button>
+        <input type="text" class="s-name" value="${s.name}" placeholder="Service Name" onkeyup="if(event.key==='Enter') this.parentElement.querySelector('textarea').focus()">
+        <textarea class="s-log" placeholder="Notes (Enter for new card)" onkeyup="if(event.key==='Enter' && !event.shiftKey && isAdmin) { addServiceCard(); event.preventDefault(); }">${s.log||''}</textarea>`;
+    document.getElementById('hub-service-list').appendChild(d);
+    if(isAdmin && !s.name) d.querySelector('.s-name').focus();
+}
+
 function addAssignRow(a={resName:'',servName:'',start:'',end:''}) {
     const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value).filter(v=>v);
     const defaults = getBlockDates();
     const tr = document.createElement('tr');
+    tr.className = 'assign-row';
     tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
                     <td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
                     <td><input type="date" class="a-start" value="${a.start||defaults.start}"></td>
@@ -217,6 +228,7 @@ function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
     const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value).filter(v=>v);
     const defaults = getBlockDates();
     const tr = document.createElement('tr');
+    tr.className = 'pto-row';
     tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
                     <td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
                     <td><input type="date" class="p-start" value="${p.start||defaults.start}"></td>
@@ -228,22 +240,42 @@ function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
 
 function openHub() {
     const data = getYD(); const bName = data.rost.blks[currentBlockIdx]?.name || "N/A";
-    document.getElementById('hub-service-list').innerHTML = ''; (data.hub.services||[]).forEach(s => addServiceCard(s));
-    document.getElementById('hub-assign-body').innerHTML = ''; (data.hub.blockAssignments[bName] || []).forEach(a => addAssignRow(a));
-    document.getElementById('hub-pto-body').innerHTML = ''; (data.hub.blockPTO[bName] || []).forEach(p => addPtoRow(p));
+    document.getElementById('hub-service-list').innerHTML = ''; 
+    (data.hub.services||[]).forEach(s => addServiceCard(s));
+    document.getElementById('hub-assign-body').innerHTML = ''; 
+    (data.hub.blockAssignments[bName] || []).forEach(a => addAssignRow(a));
+    document.getElementById('hub-pto-body').innerHTML = ''; 
+    (data.hub.blockPTO[bName] || []).forEach(p => addPtoRow(p));
     document.getElementById('hubActionBtn').textContent = isAdmin ? "Save & Close Hub" : "Close Hub";
     document.getElementById('hubOverlay').classList.add('open');
 }
 
 function saveHub() {
     if(!isAdmin) { document.getElementById('hubOverlay').classList.remove('open'); return; }
-    const data = getYD(); const bName = data.rost.blks[currentBlockIdx]?.name;
-    data.hub.services = [...document.querySelectorAll('.s-name')].map((el, i) => ({ name: el.value, log: document.querySelectorAll('.s-log')[i].value }));
+    const yd = getYD(); const bName = yd.rost.blks[currentBlockIdx]?.name;
+    
+    // Explicit Data Capture
+    yd.hub.services = [...document.querySelectorAll('.service-card')].map(card => ({
+        name: card.querySelector('.s-name').value,
+        log: card.querySelector('.s-log').value
+    }));
+
     if(bName) {
-        data.hub.blockAssignments[bName] = [...document.querySelectorAll('#hub-assign-body tr')].map(tr => ({ resName: tr.querySelector('.a-res').value, servName: tr.querySelector('.a-serv').value, start: tr.querySelector('.a-start').value, end: tr.querySelector('.a-end').value }));
-        data.hub.blockPTO[bName] = [...document.querySelectorAll('#hub-pto-body tr')].map(tr => ({ resName: tr.querySelector('.p-res').value, servName: tr.querySelector('.p-serv').value, start: tr.querySelector('.p-start').value, end: tr.querySelector('.p-end').value }));
+        yd.hub.blockAssignments[bName] = [...document.querySelectorAll('.assign-row')].map(tr => ({
+            resName: tr.querySelector('.a-res').value,
+            servName: tr.querySelector('.a-serv').value,
+            start: tr.querySelector('.a-start').value,
+            end: tr.querySelector('.a-end').value
+        }));
+        yd.hub.blockPTO[bName] = [...document.querySelectorAll('.pto-row')].map(tr => ({
+            resName: tr.querySelector('.p-res').value,
+            servName: tr.querySelector('.p-serv').value,
+            start: tr.querySelector('.p-start').value,
+            end: tr.querySelector('.p-end').value
+        }));
     }
-    document.getElementById('hubOverlay').classList.remove('open'); renderCalendar();
+    document.getElementById('hubOverlay').classList.remove('open'); 
+    renderCalendar();
 }
 
 // --- SETUP HELPERS ---
