@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V31.6</title>
+<title>Residency Master Scheduler V31.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -81,9 +81,9 @@
     <div class="hub-modal">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2 style="font-weight:800;">Clinical Operations & PTO Hub</h2>
-            <button class="btn-primary" onclick="saveHub()">Save & Close Hub</button>
+            <button class="btn-primary" id="hubSaveBtn" onclick="saveHub()">Save & Close Hub</button>
         </div>
-        <div class="hub-scroll">
+        <div class="hub-scroll" id="hubScrollArea">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px; margin-bottom:20px;">
                 <div>
                     <h3 style="font-size:11px; text-transform:uppercase; color:gray; margin-bottom:10px;">1. Resident Rotation Registry</h3>
@@ -103,7 +103,7 @@
 </div>
 
 <div class="modal-overlay" id="shiftOverlay" onclick="if(event.target==this) this.classList.remove('open')">
-    <div style="background:white; width:500px; padding:30px; border-radius:24px;">
+    <div style="background:white; width:500px; padding:30px; border-radius:24px;" id="shiftModalArea">
         <h3 id="modalDateLabel" style="margin-bottom:15px; font-weight:800;"></h3>
         <input type="text" id="day-act-input" placeholder="Daily Activity Override" style="margin-bottom:15px;">
         <div id="am-editor" style="background:#f8fdf9; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e1eee2;">
@@ -116,14 +116,13 @@
             <div id="pm-at-cont"></div><button class="btn-ui" onclick="addDrop('pm','at')">+ Attending</button>
             <div id="pm-res-cont"></div><button class="btn-ui" onclick="addDrop('pm','res')">+ Resident</button>
         </div>
-        <button class="btn-primary" style="width:100%" onclick="saveDay()">Save Day</button>
+        <button class="btn-primary" id="shiftSaveBtn" style="width:100%" onclick="saveDay()">Save Day</button>
     </div>
 </div>
 
 <div id="calendar" class="calendar"></div>
 
 <script>
-// --- CONFIG ---
 const BIN_ID = '69c1653eb7ec241ddc961bfe'; 
 const API_KEY = '$2a$10$.EoU0qNlEusl97jcpZ6Eeec3SnG8n3juLBwMgKsZ7K72.2xdx3QXK';
 
@@ -135,16 +134,36 @@ let currentBlockIdx = 0;
 let editK = null;
 let masterData = {"2025":{"sched":{},"rost":{"atts":[],"ress":[],"blks":[],"rules":[]},"hub":{"services":[],"blockAssignments":{},"blockPTO":{}}}};
 
-// --- GLOBAL KEY LISTENER FOR ENTER ---
+// --- SMART ENTER KEY LISTENER (V31.7) ---
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
+        const active = document.activeElement;
         const shiftMod = document.getElementById('shiftOverlay');
         const hubMod = document.getElementById('hubOverlay');
         const setupDraw = document.getElementById('drawer');
-        
-        if (shiftMod.classList.contains('open')) { e.preventDefault(); saveDay(); }
-        else if (hubMod.classList.contains('open')) { e.preventDefault(); saveHub(); }
-        else if (setupDraw.style.display === 'block') { e.preventDefault(); saveSetup(); }
+
+        // Check if we are inside a modal
+        let container = null;
+        if (shiftMod.classList.contains('open')) container = document.getElementById('shiftModalArea');
+        else if (hubMod.classList.contains('open')) container = document.getElementById('hubScrollArea');
+        else if (setupDraw.style.display === 'block') container = setupDraw;
+
+        if (container) {
+            e.preventDefault();
+            // Find all inputs/selects in this container
+            const focusables = Array.from(container.querySelectorAll('input, select, textarea, .btn-primary, .btn-ui'));
+            const index = focusables.indexOf(active);
+
+            if (index > -1 && index < focusables.length - 1) {
+                // If there's a next item, move to it
+                focusables[index + 1].focus();
+            } else {
+                // If it's the last item, perform the Save action
+                if (shiftMod.classList.contains('open')) saveDay();
+                else if (hubMod.classList.contains('open')) saveHub();
+                else if (setupDraw.style.display === 'block') saveSetup();
+            }
+        }
     }
 });
 
