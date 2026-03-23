@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V32.0</title>
+<title>Residency Master Scheduler V32.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -16,29 +16,31 @@
     .admin-only { display: none !important; }
     body.is-admin .admin-only { display: inline-block !important; }
     header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 15px; }
-    .left-nav { display: flex; align-items: center; gap: 12px; }
+    .left-nav { display: flex; align-items: center; gap: 15px; }
     .view-toggle { display: flex; background: #e9ecef; padding: 4px; border-radius: 30px; border: 1px solid #dee2e6; }
-    .view-toggle button { border: none; background: none; padding: 8px 15px; border-radius: 25px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); }
+    .view-toggle button { border: none; background: none; padding: 8px 18px; border-radius: 25px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); }
     .view-toggle button.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .nav-pill { display: flex; align-items: center; background: var(--surface); padding: 5px 15px; border-radius: 30px; border: 1px solid var(--border); }
     .nav-title { font-size: 13px; font-weight: 700; min-width: 160px; text-align: center; }
     .nav-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--accent); padding: 0 10px; }
-    .btn-ui { background: var(--surface); border: 1px solid var(--border); padding: 8px 18px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 11px; white-space: nowrap; }
-    .btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; }
+    .btn-ui { background: var(--surface); border: 1px solid var(--border); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 11px; white-space: nowrap; }
+    .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; cursor: pointer; }
     .btn-save { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 800; cursor: pointer; }
-    select, input, textarea { width: 100%; padding: 8px; border: 2px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8f9fa; }
+    select, input, textarea { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8f9fa; }
     .calendar { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); display: grid; grid-template-columns: repeat(7, 1fr); }
     .cal-header { padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); text-align: center; border-bottom: 1px solid var(--border); background: #fafbfc; }
-    .cal-cell { min-height: 150px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+    .cal-cell { min-height: 160px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
     body.is-admin .cal-cell { cursor: pointer; }
     .day-num { font-size: 12px; font-weight: 700; color: #adb5bd; }
-    .activity-tag { background: var(--act-bg); color: var(--act-text); font-size: 9px; font-weight: 800; text-align: center; padding: 3px; border-radius: 4px; text-transform: uppercase; border: 1px solid #ffeeba; }
+    .activity-tag { background: var(--act-bg); color: var(--act-text); font-size: 9px; font-weight: 800; text-align: center; padding: 2px; border-radius: 4px; text-transform: uppercase; border: 1px solid #ffeeba; }
+    .pto-tag { background: var(--pto-bg); color: var(--pto-text); font-size: 9px; padding: 3px; border-radius: 4px; font-weight: 800; border: 1px solid #ffc9c9; }
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-overlay.open { display: flex; }
     .hub-modal { background: white; width: 95vw; max-width: 1400px; height: 90vh; border-radius: 24px; padding: 35px; display: flex; flex-direction: column; }
-    .hub-scroll { overflow-y: auto; flex-grow: 1; }
+    .hub-scroll { overflow-y: auto; flex-grow: 1; padding: 10px; }
     .input-pill { display: grid; grid-template-columns: 1fr 30px; align-items: center; gap: 8px; margin-bottom: 8px; }
     .remove-btn { color: #adb5bd; cursor: pointer; border: none; background: none; font-size: 20px; }
+    .service-card { position: relative; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
 </style>
 </head>
 <body class="is-viewer">
@@ -46,7 +48,7 @@
 <header>
     <div class="left-nav">
         <button class="btn-ui" id="authBtn" onclick="handleAuth()">🔒 Coordinator Login</button>
-        <select id="yearSelect" onchange="changeYear()" style="background:#343a40; color:white; border-radius:30px; padding:8px 15px; font-weight:700; border:none; width:auto;">
+        <select id="yearSelect" onchange="changeYear()" style="background:#343a40; color:white; border-radius:30px; padding:8px 15px; font-weight:700; border:none; cursor:pointer;">
             <option value="2025">AY 2025-2026</option>
             <option value="2026">AY 2026-2027</option>
         </select>
@@ -59,20 +61,20 @@
             <div id="navTitle" class="nav-title">--</div>
             <button class="nav-btn" onclick="nav(1)">&#8250;</button>
         </div>
-        <button class="btn-ui" onclick="openHub()">🏥 Hub <span id="hub-context-tag" style="background:#343a40; color:white; padding:2px 8px; border-radius:4px; font-size:10px;"></span></button>
+        <button class="btn-ui" onclick="openHub()">🏥 Service Hub <span id="hub-context-tag" style="background:#343a40; color:white; padding:2px 8px; border-radius:4px; font-size:10px;"></span></button>
     </div>
     <div style="display:flex; gap:10px;">
         <button class="btn-save admin-only" onclick="saveToCloud()">💾 Publish Changes</button>
-        <button class="btn-ui admin-only" onclick="toggleDrawer()">⚙ Setup</button>
+        <button class="btn-ui admin-only" onclick="toggleDrawer()">⚙ Global Setup</button>
     </div>
 </header>
 
 <div id="drawer" style="display:none; padding:20px; background:white; border-radius:12px; margin-bottom:20px; border:1px solid #eee;">
     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:20px;">
-        <div data-section="att"><h3>Attendings</h3><div id="att-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addRosterRow('att')">+ Add</button></div>
-        <div data-section="res"><h3>Residents</h3><div id="res-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addRosterRow('res')">+ Add</button></div>
-        <div data-section="blk"><h3>Blocks</h3><div id="blk-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addBlockRow()">+ Add Block</button></div>
-        <div data-section="rule"><h3>Weekly Rules</h3><div id="rules-list"></div><button class="btn-ui" style="width:100%" onclick="addRuleRow()">+ Add Rule</button></div>
+        <div><h3>Attendings</h3><div id="att-list"></div><button class="btn-ui" style="width:100%" onclick="addRosterRow('att')">+ Add</button></div>
+        <div><h3>Residents</h3><div id="res-list"></div><button class="btn-ui" style="width:100%" onclick="addRosterRow('res')">+ Add</button></div>
+        <div><h3>Blocks</h3><div id="blk-list"></div><button class="btn-ui" style="width:100%" onclick="addBlockRow()">+ Add Block</button></div>
+        <div><h3>Weekly Rules</h3><div id="rules-list"></div><button class="btn-ui" style="width:100%" onclick="addRuleRow()">+ Add Rule</button></div>
     </div>
     <div style="text-align:right; margin-top:15px;"><button class="btn-primary" onclick="saveSetup()">Save & Close Setup</button></div>
 </div>
@@ -80,41 +82,33 @@
 <div class="modal-overlay" id="hubOverlay" onclick="if(event.target==this) this.classList.remove('open')">
     <div class="hub-modal">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="font-weight:800;">Clinical Operations & Hub</h2>
+            <h2 style="font-weight:800;">Operations Hub</h2>
             <button class="btn-primary" onclick="saveHub()">Save & Close Hub</button>
         </div>
-        <div class="hub-scroll" id="hubFormArea">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px; margin-bottom:20px;">
-                <div data-section="assign">
-                    <h3 style="font-size:11px; text-transform:uppercase; color:gray; margin-bottom:10px;">1. Resident Rotation Registry</h3>
-                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-assign-body"></tbody></table>
-                    <button class="btn-ui add-trigger admin-only" style="width:100%; border-style:dashed;" onclick="addAssignRow()">+ Link Resident</button>
-                </div>
-                <div data-section="pto">
-                    <h3 style="font-size:11px; text-transform:uppercase; color:var(--pto-text); margin-bottom:10px;">2. PTO / Absences</h3>
-                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-pto-body"></tbody></table>
-                    <button class="btn-ui add-trigger admin-only" style="width:100%; border-style:dashed;" onclick="addPtoRow()">+ Add PTO</button>
-                </div>
+        <div class="hub-scroll">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-bottom:30px;">
+                <div><h3 style="font-size:11px; color:gray;">RESIDENT ROTATIONS</h3><table style="width:100%"><tbody id="hub-assign-body"></tbody></table><button class="btn-ui" style="width:100%; border-style:dashed;" onclick="addAssignRow()">+ Link Resident</button></div>
+                <div><h3 style="font-size:11px; color:var(--pto-text);">PTO / EXCEPTIONS</h3><table style="width:100%"><tbody id="hub-pto-body"></tbody></table><button class="btn-ui" style="width:100%; border-style:dashed;" onclick="addPtoRow()">+ Add PTO</button></div>
             </div>
             <div id="hub-service-list" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;"></div>
-            <button class="btn-ui admin-only" style="width:100%; margin-top:20px; border-style:dashed;" onclick="addServiceCard()">+ New Service Card</button>
+            <button class="btn-ui" style="width:100%; margin-top:20px; border-style:dashed;" onclick="addServiceCard()">+ New Service Card</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="shiftOverlay" onclick="if(event.target==this) this.classList.remove('open')">
-    <div style="background:white; width:500px; padding:30px; border-radius:24px;" id="shiftFormArea">
-        <h3 id="modalDateLabel" style="margin-bottom:15px; font-weight:800;"></h3>
-        <input type="text" id="day-act-input" placeholder="Daily Activity Override" style="margin-bottom:15px;">
-        <div id="am-editor" data-section="am" style="background:#f8fdf9; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e1eee2;">
-            <div style="font-weight:800; color:#2e7d32; font-size:11px; margin-bottom:8px;">☀️ AM STAFFING</div>
+    <div style="background:white; width:500px; padding:35px; border-radius:24px;">
+        <h3 id="modalDateLabel" style="margin-bottom:20px; font-weight:800;"></h3>
+        <input type="text" id="day-act-input" placeholder="Daily Activity Override" style="margin-bottom:20px;">
+        <div style="background:#f8fdf9; padding:15px; border-radius:12px; border:1px solid #e1eee2; margin-bottom:10px;">
+            <div style="font-size:11px; font-weight:800; color:#2e7d32; margin-bottom:10px;">☀️ AM</div>
             <div id="am-at-cont"></div><button class="btn-ui" onclick="addDrop('am','at')">+ Attending</button>
-            <div id="am-res-cont"></div><button class="btn-ui add-trigger" onclick="addDrop('am','res')">+ Resident</button>
+            <div id="am-res-cont"></div><button class="btn-ui" onclick="addDrop('am','res')">+ Resident</button>
         </div>
-        <div id="pm-editor" data-section="pm" style="background:#f8fbff; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #e1e9f5;">
-            <div style="font-weight:800; color:#1565c0; font-size:11px; margin-bottom:8px;">🌙 PM STAFFING</div>
+        <div style="background:#f8fbff; padding:15px; border-radius:12px; border:1px solid #e1e9f5; margin-bottom:20px;">
+            <div style="font-size:11px; font-weight:800; color:#1565c0; margin-bottom:10px;">🌙 PM</div>
             <div id="pm-at-cont"></div><button class="btn-ui" onclick="addDrop('pm','at')">+ Attending</button>
-            <div id="pm-res-cont"></div><button class="btn-ui add-trigger" onclick="addDrop('pm','res')">+ Resident</button>
+            <div id="pm-res-cont"></div><button class="btn-ui" onclick="addDrop('pm','res')">+ Resident</button>
         </div>
         <button class="btn-primary" style="width:100%" onclick="saveDay()">Save Day</button>
     </div>
@@ -133,42 +127,6 @@ let currentView = 'block';
 let currentBlockIdx = 0;
 let editK = null;
 let masterData = {"2025":{"sched":{},"rost":{"atts":[],"ress":[],"blks":[],"rules":[]},"hub":{"services":[],"blockAssignments":{},"blockPTO":{}}}};
-
-// --- V32.0 RAPID-FIRE GLOBAL LISTENER ---
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        const active = document.activeElement;
-        if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'SELECT' && active.tagName !== 'TEXTAREA')) return;
-
-        const container = active.closest('#shiftFormArea, #hubFormArea, #drawer');
-        if (!container) return;
-
-        e.preventDefault();
-        
-        // Logic: Find all inputs/selects in the immediate section
-        const section = active.closest('[data-section]') || container;
-        const inputs = Array.from(section.querySelectorAll('input, select, textarea'));
-        const index = inputs.indexOf(active);
-
-        if (index < inputs.length - 1) {
-            // Move to next input in row
-            inputs[index + 1].focus();
-        } else {
-            // End of row reached - trigger "Add" button for that section
-            const addBtn = section.querySelector('.add-trigger');
-            if (addBtn) {
-                addBtn.click();
-                // Focus the newly created input
-                setTimeout(() => {
-                    const newInputs = Array.from(section.querySelectorAll('input, select, textarea'));
-                    newInputs[newInputs.length - inputs.length + index].focus(); 
-                    // Simple fallback: focus the last one
-                    newInputs[newInputs.length - (inputs.length - index)].focus();
-                }, 10);
-            }
-        }
-    }
-});
 
 function handleAuth() {
     if(isAdmin) { isAdmin = false; document.body.className = 'is-viewer'; document.getElementById('authBtn').innerHTML = "🔒 Coordinator Login"; }
@@ -195,62 +153,92 @@ async function saveToCloud() {
 }
 
 function getYD() { if(!masterData[curYear]) masterData[curYear] = {sched:{}, rost:{atts:[],ress:[],blks:[],rules:[]}, hub:{services:[],blockAssignments:{},blockPTO:{}}}; return masterData[curYear]; }
-function findCurBlk() { 
-    const today = new Date().toISOString().split('T')[0]; 
-    const blks = getYD().rost.blks; 
-    const idx = blks.findLastIndex(b => today >= b.start); 
-    currentBlockIdx = idx >= 0 ? idx : 0; 
+
+function findCurBlk() {
+    const today = new Date().toISOString().split('T')[0];
+    const blks = getYD().rost.blks;
+    const idx = blks.findLastIndex(b => today >= b.start);
+    currentBlockIdx = idx >= 0 ? idx : 0;
 }
+
+function toggleDrawer() { const d = document.getElementById('drawer'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(d.style.display==='block') renderDrawer(); }
 function setView(v) { currentView = v; document.getElementById('monthBtn').classList.toggle('active', v==='month'); document.getElementById('blockBtn').classList.toggle('active', v==='block'); renderCalendar(); }
 function nav(dir) { if(currentView === 'month') curDate.setMonth(curDate.getMonth() + dir); else currentBlockIdx = Math.max(0, Math.min(getYD().rost.blks.length - 1, currentBlockIdx + dir)); renderCalendar(); }
 function changeYear() { curYear = document.getElementById('yearSelect').value; findCurBlk(); renderCalendar(); }
 
-function renderCalendar() {
-    const cal = document.getElementById('calendar'); cal.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
-    const yd = getYD(); let start, end, title;
-    const bName = yd.rost.blks[currentBlockIdx]?.name;
-
-    if (currentView === 'month') {
-        start = new Date(curDate.getFullYear(), curDate.getMonth(), 1);
-        end = new Date(curDate.getFullYear(), curDate.getMonth() + 1, 0);
-        title = start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    } else {
-        if (!yd.rost.blks.length) { cal.innerHTML += '<div style="grid-column:span 7; padding:50px; text-align:center;">Setup Blocks.</div>'; return; }
-        const b = yd.rost.blks[currentBlockIdx]; 
-        title = b.name; start = new Date(b.start + 'T00:00:00'); 
-        const nextB = yd.rost.blks[currentBlockIdx+1];
-        if (nextB) {
-            end = new Date(new Date(nextB.start + 'T00:00:00').getTime() - 86400000);
-        } else {
-            end = new Date(new Date(start).getTime() + (27 * 86400000));
-        }
-    }
-    document.getElementById('navTitle').textContent = title;
-    document.getElementById('hub-context-tag').textContent = bName || "N/A";
-    const blockPtos = yd.hub.blockPTO[bName] || [];
-    for (let i = 0; i < start.getDay(); i++) cal.innerHTML += `<div class="cal-cell" style="background:#fcfcfc"></div>`;
-    let loop = new Date(start);
-    while (loop <= end) {
-        const k = loop.toISOString().split('T')[0];
-        const dayData = yd.sched[k] || { act: '', am:{at:[],rs:[]}, pm:{at:[],rs:[]} };
-        const matchingRules = (yd.rost.rules || []).filter(r => r.days.includes(loop.getDay()));
-        const ptosToday = blockPtos.filter(p => k >= p.start && k <= p.end);
-        let shiftHtml = '';
-        ['am','pm'].forEach(s => {
-            const rules = matchingRules.filter(r => r.timeSlot === s || r.timeSlot === 'both').map(r => `<div class="activity-tag">${r.name}</div>`).join('');
-            const staff = dayData[s] || {at:[],rs:[]};
-            const rsWithConflict = (staff.rs || []).map(rn => ptosToday.some(p=>p.resName===rn) ? `🚩${rn}` : rn);
-            if(rules || staff.at.length || rsWithConflict.length) {
-                shiftHtml += `<div style="font-size:10px; padding:4px; border-radius:6px; margin-top:2px; ${s==='am'?'background:var(--am-bg); color:var(--am-text)':'background:var(--pm-bg); color:var(--pm-text)'}">${rules}<div style="font-weight:600;">${s.toUpperCase()}: ${staff.at.concat(rsWithConflict).join(', ')}</div></div>`;
-            }
-        });
-        const clickAttr = isAdmin ? `onclick="openShiftEditor('${k}')"` : '';
-        cal.innerHTML += `<div class="cal-cell" ${clickAttr}><div class="day-num">${loop.getDate()}</div>${dayData.act ? `<div class="activity-tag" style="background:#333; color:#fff">${dayData.act}</div>` : ''}${ptosToday.map(p => `<div class="activity-tag" style="background:var(--pto-bg); color:var(--pto-text); border-color:#ffa8a8;">OFF: ${p.resName}</div>`).join('')}${shiftHtml}</div>`;
-        loop.setDate(loop.getDate() + 1);
-    }
+// --- HUB LOGIC ---
+function addServiceCard(s={name:'',log:''}) {
+    const d = document.createElement('div'); d.className = 'service-card';
+    d.innerHTML = `
+        <button class="remove-btn" style="position:absolute; top:12px; right:12px;" onclick="this.parentElement.remove()">×</button>
+        <input type="text" class="s-name" value="${s.name}" placeholder="Service Name (Enter for notes)" 
+               onkeyup="if(event.key==='Enter') this.parentElement.querySelector('textarea').focus()">
+        <textarea class="s-log" placeholder="Notes (Enter for new card)" 
+               onkeyup="if(event.key==='Enter' && !event.shiftKey) { addServiceCard(); event.preventDefault(); }">${s.log||''}</textarea>`;
+    document.getElementById('hub-service-list').appendChild(d);
+    d.querySelector('.s-name').focus();
 }
 
-function toggleDrawer() { const d = document.getElementById('drawer'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(d.style.display==='block') renderDrawer(); }
+function addAssignRow(a={resName:'',servName:'',start:'',end:''}) {
+    const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value).filter(v=>v);
+    if(!a.start || !a.end) {
+        const b = yd.rost.blks[currentBlockIdx];
+        if(b) {
+            a.start = a.start || b.start;
+            const nextB = yd.rost.blks[currentBlockIdx+1];
+            if(nextB) {
+                let d = new Date(nextB.start + 'T00:00:00'); d.setDate(d.getDate() - 1);
+                a.end = a.end || d.toISOString().split('T')[0];
+            } else {
+                let d = new Date(b.start + 'T00:00:00'); d.setDate(d.getDate() + 27);
+                a.end = a.end || d.toISOString().split('T')[0];
+            }
+        }
+    }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
+                    <td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
+                    <td><input type="date" class="a-start" value="${a.start||''}"></td>
+                    <td><input type="date" class="a-end" value="${a.end||''}" onkeyup="if(event.key==='Enter') addAssignRow()"></td>
+                    <td><button class="remove-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+    document.getElementById('hub-assign-body').appendChild(tr);
+    tr.querySelector('select').focus();
+}
+
+function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
+    const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value).filter(v=>v);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
+                    <td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
+                    <td><input type="date" class="p-start" value="${p.start||''}"></td>
+                    <td><input type="date" class="p-end" value="${p.end||''}" onkeyup="if(event.key==='Enter') addPtoRow()"></td>
+                    <td><button class="remove-btn" onclick="this.closest('tr').remove()">×</button></td>`;
+    document.getElementById('hub-pto-body').appendChild(tr);
+    tr.querySelector('select').focus();
+}
+
+// --- SETUP HELPERS ---
+function addRosterRow(t, v='') {
+    const d = document.createElement('div'); d.className = 'input-pill';
+    d.innerHTML = `<input type="text" class="${t}-in" value="${v}" onkeyup="if(event.key==='Enter') addRosterRow('${t}')"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+    document.getElementById(`${t}-list`).appendChild(d);
+    d.querySelector('input').focus();
+}
+function addBlockRow(n='', s='') {
+    const d = document.createElement('div'); d.className = 'input-pill';
+    d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}" onkeyup="if(event.key==='Enter') addBlockRow()"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+    document.getElementById('blk-list').appendChild(d);
+    d.querySelector('.blk-n').focus();
+}
+function addRuleRow(n='', days=[], slot='both') {
+    const d = document.createElement('div'); d.className = "rule-container"; d.style = "background:#f8f9fa; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #eee;";
+    let chks = [0,1,2,3,4,5,6].map(i => `<label style="margin-right:8px; font-size:11px;"><input type="checkbox" class="r-chk" value="${i}" ${days.includes(i)?'checked':''}> ${['S','M','T','W','T','F','S'][i]}</label>`).join('');
+    d.innerHTML = `<div class="input-pill"><input type="text" class="rule-n" value="${n}" placeholder="Activity Name" onkeyup="if(event.key==='Enter') addRuleRow()"><button class="remove-btn" onclick="this.parentElement.remove()">×</button></div>
+        <div style="display:flex; gap:10px; align-items:center;"><select class="rule-slot" style="width:auto;"><option value="both" ${slot==='both'?'selected':''}>All Day</option><option value="am" ${slot==='am'?'selected':''}>AM</option><option value="pm" ${slot==='pm'?'selected':''}>PM</option></select><div style="display:flex;">${chks}</div></div>`;
+    document.getElementById('rules-list').appendChild(d);
+    d.querySelector('input').focus();
+}
+
 function renderDrawer() {
     const r = getYD().rost;
     document.getElementById('att-list').innerHTML = ''; (r.atts||[]).forEach(v => addRosterRow('att', v));
@@ -258,25 +246,7 @@ function renderDrawer() {
     document.getElementById('blk-list').innerHTML = ''; (r.blks||[]).forEach(b => addBlockRow(b.name, b.start));
     document.getElementById('rules-list').innerHTML = ''; (r.rules||[]).forEach(rule => addRuleRow(rule.name, rule.days, rule.timeSlot));
 }
-function addRosterRow(t, v='') { 
-    const d = document.createElement('div'); d.className = 'input-pill'; 
-    d.innerHTML = `<input type="text" class="${t}-in" value="${v}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; 
-    document.getElementById(`${t}-list`).appendChild(d);
-    d.querySelector('input').focus();
-}
-function addBlockRow(n='', s='') { 
-    const d = document.createElement('div'); d.className = 'input-pill'; 
-    d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; 
-    document.getElementById('blk-list').appendChild(d);
-    d.querySelector('input').focus();
-}
-function addRuleRow(n='', days=[], slot='both') {
-    const d = document.createElement('div'); d.className = "rule-container"; d.style = "background:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee;";
-    let chks = [0,1,2,3,4,5,6].map(i => `<label style="margin-right:5px; font-size:10px;"><input type="checkbox" class="r-chk" value="${i}" ${days.includes(i)?'checked':''}> ${['S','M','T','W','T','F','S'][i]}</label>`).join('');
-    d.innerHTML = `<div class="input-pill"><input type="text" class="rule-n" value="${n}" placeholder="Activity Name"><button class="remove-btn" onclick="this.parentElement.remove()">×</button></div>
-        <div style="display:flex; gap:10px; align-items:center;"><select class="rule-slot" style="width:auto; padding:2px;"><option value="both" ${slot==='both'?'selected':''}>All Day</option><option value="am" ${slot==='am'?'selected':''}>AM</option><option value="pm" ${slot==='pm'?'selected':''}>PM</option></select><div style="display:flex;">${chks}</div></div>`;
-    document.getElementById('rules-list').appendChild(d);
-}
+
 function saveSetup() {
     const r = getYD().rost;
     r.atts = [...document.querySelectorAll('.att-in')].map(i=>i.value).filter(v=>v);
@@ -293,25 +263,7 @@ function openHub() {
     document.getElementById('hub-pto-body').innerHTML = ''; (data.hub.blockPTO[bName] || []).forEach(p => addPtoRow(p));
     document.getElementById('hubOverlay').classList.add('open');
 }
-function addServiceCard(s={name:'',log:''}) {
-    const d = document.createElement('div'); d.className = 'service-card';
-    d.innerHTML = `<button class="remove-btn admin-only" style="position:absolute; top:5px; right:5px;" onclick="this.parentElement.remove()">×</button><input type="text" class="s-name" value="${s.name}" placeholder="Service Name" style="font-weight:700; margin-bottom:8px;"><textarea class="s-log" placeholder="SOPs..." style="height:80px;">${s.log||''}</textarea>`;
-    document.getElementById('hub-service-list').appendChild(d);
-}
-function addAssignRow(a={resName:'',servName:'',start:'',end:''}) {
-    const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="a-start" value="${a.start}"></td><td><input type="date" class="a-end" value="${a.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
-    document.getElementById('hub-assign-body').appendChild(tr);
-    tr.querySelector('select').focus();
-}
-function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
-    const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="p-start" value="${p.start}"></td><td><input type="date" class="p-end" value="${p.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
-    document.getElementById('hub-pto-body').appendChild(tr);
-    tr.querySelector('select').focus();
-}
+
 function saveHub() {
     const data = getYD(); const bName = data.rost.blks[currentBlockIdx]?.name;
     data.hub.services = [...document.querySelectorAll('.s-name')].map((el, i) => ({ name: el.value, log: document.querySelectorAll('.s-log')[i].value }));
@@ -320,6 +272,51 @@ function saveHub() {
         data.hub.blockPTO[bName] = [...document.querySelectorAll('#hub-pto-body tr')].map(tr => ({ resName: tr.querySelector('.p-res').value, servName: tr.querySelector('.p-serv').value, start: tr.querySelector('.p-start').value, end: tr.querySelector('.p-end').value }));
     }
     document.getElementById('hubOverlay').classList.remove('open'); renderCalendar();
+}
+
+function renderCalendar() {
+    const cal = document.getElementById('calendar'); cal.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
+    const yd = getYD(); let start, end, title;
+    const bName = yd.rost.blks[currentBlockIdx]?.name;
+
+    if (currentView === 'month') {
+        start = new Date(curDate.getFullYear(), curDate.getMonth(), 1);
+        end = new Date(curDate.getFullYear(), curDate.getMonth() + 1, 0);
+        title = start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    } else {
+        if (!yd.rost.blks.length) { cal.innerHTML += '<div style="grid-column:span 7; padding:50px; text-align:center;">Setup Blocks.</div>'; return; }
+        const b = yd.rost.blks[currentBlockIdx]; title = b.name; start = new Date(b.start + 'T00:00:00'); 
+        const nextB = yd.rost.blks[currentBlockIdx+1];
+        end = nextB ? new Date(new Date(nextB.start + 'T00:00:00').getTime() - 86400000) : new Date(new Date(start).getTime() + (27 * 86400000));
+    }
+    document.getElementById('navTitle').textContent = title;
+    document.getElementById('hub-context-tag').textContent = bName || "";
+    const blockPtos = yd.hub.blockPTO[bName] || [];
+
+    for (let i = 0; i < start.getDay(); i++) cal.innerHTML += `<div class="cal-cell" style="background:#fcfcfc"></div>`;
+    let loop = new Date(start);
+    while (loop <= end) {
+        const k = loop.toISOString().split('T')[0];
+        const dayData = yd.sched[k] || { act: '', am:{at:[],rs:[]}, pm:{at:[],rs:[]} };
+        const matchingRules = (yd.rost.rules || []).filter(r => r.days.includes(loop.getDay()));
+        const ptosToday = blockPtos.filter(p => k >= p.start && k <= p.end);
+
+        let ptoHtml = ptosToday.map(p => `<div class="pto-tag"><b>${p.servName}:</b> ${p.resName}</div>`).join('');
+
+        let shiftHtml = '';
+        ['am','pm'].forEach(s => {
+            const ruleTags = matchingRules.filter(r => r.timeSlot === s || r.timeSlot === 'both').map(r => `<div class="activity-tag">${r.name}</div>`).join('');
+            const staff = dayData[s] || {at:[],rs:[]};
+            const rsWithConflict = (staff.rs || []).map(rn => ptosToday.some(p=>p.resName===rn) ? `🚩${rn}` : rn);
+            if(ruleTags || staff.at.length || rsWithConflict.length) {
+                shiftHtml += `<div style="padding:4px; font-size:10px; border-radius:4px; margin-top:2px; ${s==='am'?'background:var(--am-bg); color:var(--am-text)':'background:var(--pm-bg); color:var(--pm-text)'}">${ruleTags}<b>${s.toUpperCase()}:</b> ${staff.at.concat(rsWithConflict).join(', ')}</div>`;
+            }
+        });
+
+        const clickAttr = isAdmin ? `onclick="openShiftEditor('${k}')"` : '';
+        cal.innerHTML += `<div class="cal-cell" ${clickAttr}><div class="day-num">${loop.getDate()}</div>${dayData.act ? `<div class="activity-tag" style="background:#333; color:#fff">${dayData.act}</div>` : ''}${ptoHtml}${shiftHtml}</div>`;
+        loop.setDate(loop.getDate() + 1);
+    }
 }
 
 function openShiftEditor(k) {
@@ -331,12 +328,13 @@ function openShiftEditor(k) {
         (d[s]?.at || []).forEach(v => addDrop(s, 'at', v)); (d[s]?.rs || []).forEach(v => addDrop(s, 'res', v));
     });
     document.getElementById('shiftOverlay').classList.add('open');
+    document.getElementById('day-act-input').focus();
 }
 function addDrop(s, r, v='') {
     const yd = getYD(); const cont = document.getElementById(`${s}-${r}-cont`);
     const opts = (r==='at' ? yd.rost.atts : yd.rost.ress).map(n => `<option ${n===v?'selected':''}>${n}</option>`).join('');
     const div = document.createElement('div'); div.className = 'input-pill';
-    div.innerHTML = `<select><option value="">-- Name --</option>${opts}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+    div.innerHTML = `<select onkeyup="if(event.key==='Enter') addDrop('${s}','${r}')"><option value="">-- Name --</option>${opts}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
     cont.appendChild(div);
     div.querySelector('select').focus();
 }
