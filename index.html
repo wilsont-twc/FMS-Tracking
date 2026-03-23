@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V31.7</title>
+<title>Residency Master Scheduler V32.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -69,10 +69,10 @@
 
 <div id="drawer" style="display:none; padding:20px; background:white; border-radius:12px; margin-bottom:20px; border:1px solid #eee;">
     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:20px;">
-        <div><h3>Attendings</h3><div id="att-list"></div><button class="btn-ui" style="width:100%" onclick="addRosterRow('att')">+ Add</button></div>
-        <div><h3>Residents</h3><div id="res-list"></div><button class="btn-ui" style="width:100%" onclick="addRosterRow('res')">+ Add</button></div>
-        <div><h3>Blocks</h3><div id="blk-list"></div><button class="btn-ui" style="width:100%" onclick="addBlockRow()">+ Add Block</button></div>
-        <div><h3>Weekly Rules</h3><div id="rules-list"></div><button class="btn-ui" style="width:100%" onclick="addRuleRow()">+ Add Rule</button></div>
+        <div data-section="att"><h3>Attendings</h3><div id="att-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addRosterRow('att')">+ Add</button></div>
+        <div data-section="res"><h3>Residents</h3><div id="res-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addRosterRow('res')">+ Add</button></div>
+        <div data-section="blk"><h3>Blocks</h3><div id="blk-list"></div><button class="btn-ui add-trigger" style="width:100%" onclick="addBlockRow()">+ Add Block</button></div>
+        <div data-section="rule"><h3>Weekly Rules</h3><div id="rules-list"></div><button class="btn-ui" style="width:100%" onclick="addRuleRow()">+ Add Rule</button></div>
     </div>
     <div style="text-align:right; margin-top:15px;"><button class="btn-primary" onclick="saveSetup()">Save & Close Setup</button></div>
 </div>
@@ -80,20 +80,20 @@
 <div class="modal-overlay" id="hubOverlay" onclick="if(event.target==this) this.classList.remove('open')">
     <div class="hub-modal">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="font-weight:800;">Clinical Operations & PTO Hub</h2>
-            <button class="btn-primary" id="hubSaveBtn" onclick="saveHub()">Save & Close Hub</button>
+            <h2 style="font-weight:800;">Clinical Operations & Hub</h2>
+            <button class="btn-primary" onclick="saveHub()">Save & Close Hub</button>
         </div>
-        <div class="hub-scroll" id="hubScrollArea">
+        <div class="hub-scroll" id="hubFormArea">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px; margin-bottom:20px;">
-                <div>
+                <div data-section="assign">
                     <h3 style="font-size:11px; text-transform:uppercase; color:gray; margin-bottom:10px;">1. Resident Rotation Registry</h3>
                     <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-assign-body"></tbody></table>
-                    <button class="btn-ui admin-only" style="width:100%; border-style:dashed;" onclick="addAssignRow()">+ Link Resident</button>
+                    <button class="btn-ui add-trigger admin-only" style="width:100%; border-style:dashed;" onclick="addAssignRow()">+ Link Resident</button>
                 </div>
-                <div>
+                <div data-section="pto">
                     <h3 style="font-size:11px; text-transform:uppercase; color:var(--pto-text); margin-bottom:10px;">2. PTO / Absences</h3>
                     <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-pto-body"></tbody></table>
-                    <button class="btn-ui admin-only" style="width:100%; border-style:dashed;" onclick="addPtoRow()">+ Add PTO</button>
+                    <button class="btn-ui add-trigger admin-only" style="width:100%; border-style:dashed;" onclick="addPtoRow()">+ Add PTO</button>
                 </div>
             </div>
             <div id="hub-service-list" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:20px;"></div>
@@ -103,20 +103,20 @@
 </div>
 
 <div class="modal-overlay" id="shiftOverlay" onclick="if(event.target==this) this.classList.remove('open')">
-    <div style="background:white; width:500px; padding:30px; border-radius:24px;" id="shiftModalArea">
+    <div style="background:white; width:500px; padding:30px; border-radius:24px;" id="shiftFormArea">
         <h3 id="modalDateLabel" style="margin-bottom:15px; font-weight:800;"></h3>
         <input type="text" id="day-act-input" placeholder="Daily Activity Override" style="margin-bottom:15px;">
-        <div id="am-editor" style="background:#f8fdf9; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e1eee2;">
+        <div id="am-editor" data-section="am" style="background:#f8fdf9; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e1eee2;">
             <div style="font-weight:800; color:#2e7d32; font-size:11px; margin-bottom:8px;">☀️ AM STAFFING</div>
             <div id="am-at-cont"></div><button class="btn-ui" onclick="addDrop('am','at')">+ Attending</button>
-            <div id="am-res-cont"></div><button class="btn-ui" onclick="addDrop('am','res')">+ Resident</button>
+            <div id="am-res-cont"></div><button class="btn-ui add-trigger" onclick="addDrop('am','res')">+ Resident</button>
         </div>
-        <div id="pm-editor" style="background:#f8fbff; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #e1e9f5;">
+        <div id="pm-editor" data-section="pm" style="background:#f8fbff; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #e1e9f5;">
             <div style="font-weight:800; color:#1565c0; font-size:11px; margin-bottom:8px;">🌙 PM STAFFING</div>
             <div id="pm-at-cont"></div><button class="btn-ui" onclick="addDrop('pm','at')">+ Attending</button>
-            <div id="pm-res-cont"></div><button class="btn-ui" onclick="addDrop('pm','res')">+ Resident</button>
+            <div id="pm-res-cont"></div><button class="btn-ui add-trigger" onclick="addDrop('pm','res')">+ Resident</button>
         </div>
-        <button class="btn-primary" id="shiftSaveBtn" style="width:100%" onclick="saveDay()">Save Day</button>
+        <button class="btn-primary" style="width:100%" onclick="saveDay()">Save Day</button>
     </div>
 </div>
 
@@ -134,34 +134,37 @@ let currentBlockIdx = 0;
 let editK = null;
 let masterData = {"2025":{"sched":{},"rost":{"atts":[],"ress":[],"blks":[],"rules":[]},"hub":{"services":[],"blockAssignments":{},"blockPTO":{}}}};
 
-// --- SMART ENTER KEY LISTENER (V31.7) ---
+// --- V32.0 RAPID-FIRE GLOBAL LISTENER ---
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const active = document.activeElement;
-        const shiftMod = document.getElementById('shiftOverlay');
-        const hubMod = document.getElementById('hubOverlay');
-        const setupDraw = document.getElementById('drawer');
+        if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'SELECT' && active.tagName !== 'TEXTAREA')) return;
 
-        // Check if we are inside a modal
-        let container = null;
-        if (shiftMod.classList.contains('open')) container = document.getElementById('shiftModalArea');
-        else if (hubMod.classList.contains('open')) container = document.getElementById('hubScrollArea');
-        else if (setupDraw.style.display === 'block') container = setupDraw;
+        const container = active.closest('#shiftFormArea, #hubFormArea, #drawer');
+        if (!container) return;
 
-        if (container) {
-            e.preventDefault();
-            // Find all inputs/selects in this container
-            const focusables = Array.from(container.querySelectorAll('input, select, textarea, .btn-primary, .btn-ui'));
-            const index = focusables.indexOf(active);
+        e.preventDefault();
+        
+        // Logic: Find all inputs/selects in the immediate section
+        const section = active.closest('[data-section]') || container;
+        const inputs = Array.from(section.querySelectorAll('input, select, textarea'));
+        const index = inputs.indexOf(active);
 
-            if (index > -1 && index < focusables.length - 1) {
-                // If there's a next item, move to it
-                focusables[index + 1].focus();
-            } else {
-                // If it's the last item, perform the Save action
-                if (shiftMod.classList.contains('open')) saveDay();
-                else if (hubMod.classList.contains('open')) saveHub();
-                else if (setupDraw.style.display === 'block') saveSetup();
+        if (index < inputs.length - 1) {
+            // Move to next input in row
+            inputs[index + 1].focus();
+        } else {
+            // End of row reached - trigger "Add" button for that section
+            const addBtn = section.querySelector('.add-trigger');
+            if (addBtn) {
+                addBtn.click();
+                // Focus the newly created input
+                setTimeout(() => {
+                    const newInputs = Array.from(section.querySelectorAll('input, select, textarea'));
+                    newInputs[newInputs.length - inputs.length + index].focus(); 
+                    // Simple fallback: focus the last one
+                    newInputs[newInputs.length - (inputs.length - index)].focus();
+                }, 10);
             }
         }
     }
@@ -255,8 +258,18 @@ function renderDrawer() {
     document.getElementById('blk-list').innerHTML = ''; (r.blks||[]).forEach(b => addBlockRow(b.name, b.start));
     document.getElementById('rules-list').innerHTML = ''; (r.rules||[]).forEach(rule => addRuleRow(rule.name, rule.days, rule.timeSlot));
 }
-function addRosterRow(t, v='') { const d = document.createElement('div'); d.className = 'input-pill'; d.innerHTML = `<input type="text" class="${t}-in" value="${v}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; document.getElementById(`${t}-list`).appendChild(d); }
-function addBlockRow(n='', s='') { const d = document.createElement('div'); d.className = 'input-pill'; d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; document.getElementById('blk-list').appendChild(d); }
+function addRosterRow(t, v='') { 
+    const d = document.createElement('div'); d.className = 'input-pill'; 
+    d.innerHTML = `<input type="text" class="${t}-in" value="${v}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; 
+    document.getElementById(`${t}-list`).appendChild(d);
+    d.querySelector('input').focus();
+}
+function addBlockRow(n='', s='') { 
+    const d = document.createElement('div'); d.className = 'input-pill'; 
+    d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; 
+    document.getElementById('blk-list').appendChild(d);
+    d.querySelector('input').focus();
+}
 function addRuleRow(n='', days=[], slot='both') {
     const d = document.createElement('div'); d.className = "rule-container"; d.style = "background:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee;";
     let chks = [0,1,2,3,4,5,6].map(i => `<label style="margin-right:5px; font-size:10px;"><input type="checkbox" class="r-chk" value="${i}" ${days.includes(i)?'checked':''}> ${['S','M','T','W','T','F','S'][i]}</label>`).join('');
@@ -290,12 +303,14 @@ function addAssignRow(a={resName:'',servName:'',start:'',end:''}) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="a-start" value="${a.start}"></td><td><input type="date" class="a-end" value="${a.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
     document.getElementById('hub-assign-body').appendChild(tr);
+    tr.querySelector('select').focus();
 }
 function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
     const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="p-start" value="${p.start}"></td><td><input type="date" class="p-end" value="${p.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
     document.getElementById('hub-pto-body').appendChild(tr);
+    tr.querySelector('select').focus();
 }
 function saveHub() {
     const data = getYD(); const bName = data.rost.blks[currentBlockIdx]?.name;
@@ -323,6 +338,7 @@ function addDrop(s, r, v='') {
     const div = document.createElement('div'); div.className = 'input-pill';
     div.innerHTML = `<select><option value="">-- Name --</option>${opts}</select><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
     cont.appendChild(div);
+    div.querySelector('select').focus();
 }
 function saveDay() {
     const amA = [...document.getElementById('am-at-cont').querySelectorAll('select')].map(s=>s.value).filter(v=>v);
