@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V31.5</title>
+<title>Residency Master Scheduler V31.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -123,6 +123,7 @@
 <div id="calendar" class="calendar"></div>
 
 <script>
+// --- CONFIG ---
 const BIN_ID = '69c1653eb7ec241ddc961bfe'; 
 const API_KEY = '$2a$10$.EoU0qNlEusl97jcpZ6Eeec3SnG8n3juLBwMgKsZ7K72.2xdx3QXK';
 
@@ -134,12 +135,16 @@ let currentBlockIdx = 0;
 let editK = null;
 let masterData = {"2025":{"sched":{},"rost":{"atts":[],"ress":[],"blks":[],"rules":[]},"hub":{"services":[],"blockAssignments":{},"blockPTO":{}}}};
 
-// --- KEY LISTENER (THE FIX) ---
+// --- GLOBAL KEY LISTENER FOR ENTER ---
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        if (document.getElementById('shiftOverlay').classList.contains('open')) saveDay();
-        else if (document.getElementById('hubOverlay').classList.contains('open')) saveHub();
-        else if (document.getElementById('drawer').style.display === 'block') saveSetup();
+        const shiftMod = document.getElementById('shiftOverlay');
+        const hubMod = document.getElementById('hubOverlay');
+        const setupDraw = document.getElementById('drawer');
+        
+        if (shiftMod.classList.contains('open')) { e.preventDefault(); saveDay(); }
+        else if (hubMod.classList.contains('open')) { e.preventDefault(); saveHub(); }
+        else if (setupDraw.style.display === 'block') { e.preventDefault(); saveSetup(); }
     }
 });
 
@@ -190,8 +195,7 @@ function renderCalendar() {
     } else {
         if (!yd.rost.blks.length) { cal.innerHTML += '<div style="grid-column:span 7; padding:50px; text-align:center;">Setup Blocks.</div>'; return; }
         const b = yd.rost.blks[currentBlockIdx]; 
-        title = b.name; 
-        start = new Date(b.start + 'T00:00:00'); 
+        title = b.name; start = new Date(b.start + 'T00:00:00'); 
         const nextB = yd.rost.blks[currentBlockIdx+1];
         if (nextB) {
             end = new Date(new Date(nextB.start + 'T00:00:00').getTime() - 86400000);
