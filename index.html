@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Residency Master Scheduler V31.2</title>
+<title>Residency Master Scheduler V31.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -13,25 +13,19 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; line-height: 1.4; }
-    
     .admin-only { display: none !important; }
     body.is-admin .admin-only { display: inline-block !important; }
-
     header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; gap: 15px; }
     .left-nav { display: flex; align-items: center; gap: 12px; }
-    
     .view-toggle { display: flex; background: #e9ecef; padding: 4px; border-radius: 30px; border: 1px solid #dee2e6; }
     .view-toggle button { border: none; background: none; padding: 8px 15px; border-radius: 25px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); }
     .view-toggle button.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
     .nav-pill { display: flex; align-items: center; background: var(--surface); padding: 5px 15px; border-radius: 30px; border: 1px solid var(--border); }
     .nav-title { font-size: 13px; font-weight: 700; min-width: 160px; text-align: center; }
     .nav-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--accent); padding: 0 10px; }
-
     .btn-ui { background: var(--surface); border: 1px solid var(--border); padding: 8px 18px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 11px; white-space: nowrap; }
     .btn-primary { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; }
     .btn-save { background: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 800; cursor: pointer; }
-
     select, input, textarea { width: 100%; padding: 8px; border: 2px solid var(--border); border-radius: 8px; font-size: 13px; background: #f8f9fa; }
     .calendar { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); display: grid; grid-template-columns: repeat(7, 1fr); }
     .cal-header { padding: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); text-align: center; border-bottom: 1px solid var(--border); background: #fafbfc; }
@@ -39,15 +33,12 @@
     body.is-admin .cal-cell { cursor: pointer; }
     .day-num { font-size: 12px; font-weight: 700; color: #adb5bd; }
     .activity-tag { background: var(--act-bg); color: var(--act-text); font-size: 9px; font-weight: 800; text-align: center; padding: 3px; border-radius: 4px; text-transform: uppercase; border: 1px solid #ffeeba; }
-
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-overlay.open { display: flex; }
     .hub-modal { background: white; width: 95vw; max-width: 1400px; height: 90vh; border-radius: 24px; padding: 35px; display: flex; flex-direction: column; }
     .hub-scroll { overflow-y: auto; flex-grow: 1; }
     .input-pill { display: grid; grid-template-columns: 1fr 30px; align-items: center; gap: 8px; margin-bottom: 8px; }
     .remove-btn { color: #adb5bd; cursor: pointer; border: none; background: none; font-size: 20px; }
-    
-    .service-card { background: #f8f9fa; padding: 15px; border-radius: 12px; border: 1px solid #eee; position: relative; margin-bottom: 15px; }
 </style>
 </head>
 <body class="is-viewer">
@@ -96,16 +87,12 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px; margin-bottom:20px;">
                 <div>
                     <h3 style="font-size:11px; text-transform:uppercase; color:gray; margin-bottom:10px;">1. Resident Rotation Registry</h3>
-                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;">
-                        <tbody id="hub-assign-body"></tbody>
-                    </table>
+                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-assign-body"></tbody></table>
                     <button class="btn-ui admin-only" style="width:100%; border-style:dashed;" onclick="addAssignRow()">+ Link Resident</button>
                 </div>
                 <div>
                     <h3 style="font-size:11px; text-transform:uppercase; color:var(--pto-text); margin-bottom:10px;">2. PTO / Absences</h3>
-                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;">
-                        <tbody id="hub-pto-body"></tbody>
-                    </table>
+                    <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;"><tbody id="hub-pto-body"></tbody></table>
                     <button class="btn-ui admin-only" style="width:100%; border-style:dashed;" onclick="addPtoRow()">+ Add PTO</button>
                 </div>
             </div>
@@ -136,7 +123,7 @@
 <div id="calendar" class="calendar"></div>
 
 <script>
-// --- CLOUD SYNC CONFIG ---
+// --- CREDENTIALS INCLUDED ---
 const BIN_ID = '69c1653eb7ec241ddc961bfe'; 
 const API_KEY = '$2a$10$.EoU0qNlEusl97jcpZ6Eeec3SnG8n3juLBwMgKsZ7K72.2xdx3QXK';
 
@@ -148,57 +135,44 @@ let currentBlockIdx = 0;
 let editK = null;
 let masterData = {"2025":{"sched":{},"rost":{"atts":[],"ress":[],"blks":[],"rules":[]},"hub":{"services":[],"blockAssignments":{},"blockPTO":{}}}};
 
-// --- AUTH ---
 function handleAuth() {
-    if(isAdmin) {
-        isAdmin = false;
-        document.body.className = 'is-viewer';
-        document.getElementById('authBtn').innerHTML = "🔒 Coordinator Login";
-    } else {
-        const pw = prompt("Enter Coordinator Password:");
-        if(pw === "FM$_2026") {
-            isAdmin = true;
-            document.body.className = 'is-admin';
-            document.getElementById('authBtn').innerHTML = "🔓 Admin Mode (Active)";
-        } else { alert("Incorrect Password"); }
-    }
+    if(isAdmin) { isAdmin = false; document.body.className = 'is-viewer'; document.getElementById('authBtn').innerHTML = "🔒 Coordinator Login"; }
+    else { const pw = prompt("Enter Coordinator Password:"); if(pw === "residency2026") { isAdmin = true; document.body.className = 'is-admin'; document.getElementById('authBtn').innerHTML = "🔓 Admin Mode (Active)"; } }
     renderCalendar();
 }
 
-// --- CLOUD API ---
 async function loadFromCloud() {
     try {
         const r = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': API_KEY }});
-        const res = await r.json();
-        masterData = res.record;
-        findCurBlk(); renderCalendar();
-    } catch(e) { console.error("Cloud Sync Error", e); }
+        const res = await r.json(); masterData = res.record; findCurBlk(); renderCalendar();
+    } catch(e) { console.error("Cloud Error", e); }
 }
 
 async function saveToCloud() {
     if(!isAdmin) return;
     try {
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+            method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
             body: JSON.stringify(masterData)
         });
         alert("Published Successfully!");
-    } catch(e) { alert("Network error. Could not publish."); }
+    } catch(e) { alert("Network error."); }
 }
 
-// --- CORE LOGIC ---
 function getYD() { if(!masterData[curYear]) masterData[curYear] = {sched:{}, rost:{atts:[],ress:[],blks:[],rules:[]}, hub:{services:[],blockAssignments:{},blockPTO:{}}}; return masterData[curYear]; }
-function findCurBlk() { const today = new Date().toISOString().split('T')[0]; const blks = getYD().rost.blks; const idx = blks.findLastIndex(b => today >= b.start); currentBlockIdx = idx >= 0 ? idx : 0; }
+function findCurBlk() { 
+    const today = new Date().toISOString().split('T')[0]; 
+    const blks = getYD().rost.blks; 
+    const idx = blks.findLastIndex(b => today >= b.start); 
+    currentBlockIdx = idx >= 0 ? idx : 0; 
+}
 function setView(v) { currentView = v; document.getElementById('monthBtn').classList.toggle('active', v==='month'); document.getElementById('blockBtn').classList.toggle('active', v==='block'); renderCalendar(); }
 function nav(dir) { if(currentView === 'month') curDate.setMonth(curDate.getMonth() + dir); else currentBlockIdx = Math.max(0, Math.min(getYD().rost.blks.length - 1, currentBlockIdx + dir)); renderCalendar(); }
 function changeYear() { curYear = document.getElementById('yearSelect').value; findCurBlk(); renderCalendar(); }
 
 function renderCalendar() {
-    const cal = document.getElementById('calendar'); 
-    cal.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
-    const yd = getYD(); 
-    let start, end, title;
+    const cal = document.getElementById('calendar'); cal.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="cal-header">${d}</div>`).join('');
+    const yd = getYD(); let start, end, title;
     const bName = yd.rost.blks[currentBlockIdx]?.name;
 
     if (currentView === 'month') {
@@ -206,15 +180,26 @@ function renderCalendar() {
         end = new Date(curDate.getFullYear(), curDate.getMonth() + 1, 0);
         title = start.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     } else {
-        if (!yd.rost.blks.length) { cal.innerHTML += '<div style="grid-column:span 7; padding:50px; text-align:center;">Add Blocks in Setup to begin.</div>'; return; }
-        const b = yd.rost.blks[currentBlockIdx]; title = b.name; start = new Date(b.start + 'T00:00:00'); 
+        if (!yd.rost.blks.length) { cal.innerHTML += '<div style="grid-column:span 7; padding:50px; text-align:center;">Setup Blocks.</div>'; return; }
+        const b = yd.rost.blks[currentBlockIdx]; 
+        title = b.name; 
+        // Ensure local time start
+        start = new Date(b.start + 'T00:00:00'); 
+        
         const nextB = yd.rost.blks[currentBlockIdx+1];
-        end = nextB ? new Date(new Date(nextB.start + 'T00:00:00').setDate(new Date(nextB.start).getDate()-1)) : new Date(new Date(start).setDate(start.getDate()+27));
+        if (nextB) {
+            // End is 1 day before next block starts
+            end = new Date(new Date(nextB.start + 'T00:00:00').getTime() - 86400000);
+        } else {
+            // Last block shows 28 days by default
+            end = new Date(new Date(start).getTime() + (27 * 86400000));
+        }
     }
     document.getElementById('navTitle').textContent = title;
     document.getElementById('hub-context-tag').textContent = bName || "N/A";
-
     const blockPtos = yd.hub.blockPTO[bName] || [];
+    
+    // Fill empty cells at start of week
     for (let i = 0; i < start.getDay(); i++) cal.innerHTML += `<div class="cal-cell" style="background:#fcfcfc"></div>`;
     
     let loop = new Date(start);
@@ -223,34 +208,21 @@ function renderCalendar() {
         const dayData = yd.sched[k] || { act: '', am:{at:[],rs:[]}, pm:{at:[],rs:[]} };
         const matchingRules = (yd.rost.rules || []).filter(r => r.days.includes(loop.getDay()));
         const ptosToday = blockPtos.filter(p => k >= p.start && k <= p.end);
-
-        let ptoHtml = ptosToday.map(p => `<div class="activity-tag" style="background:var(--pto-bg); color:var(--pto-text); border-color:#ffa8a8;">OFF: ${p.resName}</div>`).join('');
-        
         let shiftHtml = '';
         ['am','pm'].forEach(s => {
             const rules = matchingRules.filter(r => r.timeSlot === s || r.timeSlot === 'both').map(r => `<div class="activity-tag">${r.name}</div>`).join('');
             const staff = dayData[s] || {at:[],rs:[]};
             const rsWithConflict = (staff.rs || []).map(rn => ptosToday.some(p=>p.resName===rn) ? `🚩${rn}` : rn);
-            
             if(rules || staff.at.length || rsWithConflict.length) {
-                shiftHtml += `<div style="font-size:10px; padding:4px; border-radius:6px; margin-top:2px; ${s==='am'?'background:var(--am-bg); color:var(--am-text)':'background:var(--pm-bg); color:var(--pm-text)'}">
-                    ${rules}
-                    <div style="font-weight:600;">${s.toUpperCase()}: ${staff.at.concat(rsWithConflict).join(', ')}</div>
-                </div>`;
+                shiftHtml += `<div style="font-size:10px; padding:4px; border-radius:6px; margin-top:2px; ${s==='am'?'background:var(--am-bg); color:var(--am-text)':'background:var(--pm-bg); color:var(--pm-text)'}">${rules}<div style="font-weight:600;">${s.toUpperCase()}: ${staff.at.concat(rsWithConflict).join(', ')}</div></div>`;
             }
         });
-
         const clickAttr = isAdmin ? `onclick="openShiftEditor('${k}')"` : '';
-        cal.innerHTML += `<div class="cal-cell" ${clickAttr}>
-            <div class="day-num">${loop.getDate()}</div>
-            ${dayData.act ? `<div class="activity-tag" style="background:#333; color:#fff">${dayData.act}</div>` : ''}
-            ${ptoHtml} ${shiftHtml}
-        </div>`;
+        cal.innerHTML += `<div class="cal-cell" ${clickAttr}><div class="day-num">${loop.getDate()}</div>${dayData.act ? `<div class="activity-tag" style="background:#333; color:#fff">${dayData.act}</div>` : ''}${ptosToday.map(p => `<div class="activity-tag" style="background:var(--pto-bg); color:var(--pto-text); border-color:#ffa8a8;">OFF: ${p.resName}</div>`).join('')}${shiftHtml}</div>`;
         loop.setDate(loop.getDate() + 1);
     }
 }
 
-// --- SETUP FUNCTIONS ---
 function toggleDrawer() { const d = document.getElementById('drawer'); d.style.display = d.style.display === 'none' ? 'block' : 'none'; if(d.style.display==='block') renderDrawer(); }
 function renderDrawer() {
     const r = getYD().rost;
@@ -259,23 +231,13 @@ function renderDrawer() {
     document.getElementById('blk-list').innerHTML = ''; (r.blks||[]).forEach(b => addBlockRow(b.name, b.start));
     document.getElementById('rules-list').innerHTML = ''; (r.rules||[]).forEach(rule => addRuleRow(rule.name, rule.days, rule.timeSlot));
 }
-function addRosterRow(t, v='') {
-    const d = document.createElement('div'); d.className = 'input-pill';
-    d.innerHTML = `<input type="text" class="${t}-in" value="${v}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
-    document.getElementById(`${t}-list`).appendChild(d);
-}
-function addBlockRow(n='', s='') {
-    const d = document.createElement('div'); d.className = 'input-pill';
-    d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
-    document.getElementById('blk-list').appendChild(d);
-}
+function addRosterRow(t, v='') { const d = document.createElement('div'); d.className = 'input-pill'; d.innerHTML = `<input type="text" class="${t}-in" value="${v}"><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; document.getElementById(`${t}-list`).appendChild(d); }
+function addBlockRow(n='', s='') { const d = document.createElement('div'); d.className = 'input-pill'; d.innerHTML = `<div style="display:flex; gap:5px;"><input type="text" class="blk-n" value="${n}" placeholder="Name"><input type="date" class="blk-d" value="${s}"></div><button class="remove-btn" onclick="this.parentElement.remove()">×</button>`; document.getElementById('blk-list').appendChild(d); }
 function addRuleRow(n='', days=[], slot='both') {
     const d = document.createElement('div'); d.className = "rule-container"; d.style = "background:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee;";
     let chks = [0,1,2,3,4,5,6].map(i => `<label style="margin-right:5px; font-size:10px;"><input type="checkbox" class="r-chk" value="${i}" ${days.includes(i)?'checked':''}> ${['S','M','T','W','T','F','S'][i]}</label>`).join('');
     d.innerHTML = `<div class="input-pill"><input type="text" class="rule-n" value="${n}" placeholder="Activity Name"><button class="remove-btn" onclick="this.parentElement.remove()">×</button></div>
-        <div style="display:flex; gap:10px; align-items:center;"><select class="rule-slot" style="width:auto; padding:2px;">
-        <option value="both" ${slot==='both'?'selected':''}>All Day</option><option value="am" ${slot==='am'?'selected':''}>AM</option><option value="pm" ${slot==='pm'?'selected':''}>PM</option></select>
-        <div style="display:flex;">${chks}</div></div>`;
+        <div style="display:flex; gap:10px; align-items:center;"><select class="rule-slot" style="width:auto; padding:2px;"><option value="both" ${slot==='both'?'selected':''}>All Day</option><option value="am" ${slot==='am'?'selected':''}>AM</option><option value="pm" ${slot==='pm'?'selected':''}>PM</option></select><div style="display:flex;">${chks}</div></div>`;
     document.getElementById('rules-list').appendChild(d);
 }
 function saveSetup() {
@@ -287,7 +249,6 @@ function saveSetup() {
     document.getElementById('drawer').style.display = 'none'; findCurBlk(); renderCalendar();
 }
 
-// --- HUB LOGIC ---
 function openHub() {
     const data = getYD(); const bName = data.rost.blks[currentBlockIdx]?.name || "N/A";
     document.getElementById('hub-service-list').innerHTML = ''; (data.hub.services||[]).forEach(s => addServiceCard(s));
@@ -297,27 +258,19 @@ function openHub() {
 }
 function addServiceCard(s={name:'',log:''}) {
     const d = document.createElement('div'); d.className = 'service-card';
-    d.innerHTML = `<button class="remove-btn admin-only" style="position:absolute; top:5px; right:5px;" onclick="this.parentElement.remove()">×</button>
-        <input type="text" class="s-name" value="${s.name}" placeholder="Service Name" style="font-weight:700; margin-bottom:8px;">
-        <textarea class="s-log" placeholder="SOPs..." style="height:80px;">${s.log||''}</textarea>`;
+    d.innerHTML = `<button class="remove-btn admin-only" style="position:absolute; top:5px; right:5px;" onclick="this.parentElement.remove()">×</button><input type="text" class="s-name" value="${s.name}" placeholder="Service Name" style="font-weight:700; margin-bottom:8px;"><textarea class="s-log" placeholder="SOPs..." style="height:80px;">${s.log||''}</textarea>`;
     document.getElementById('hub-service-list').appendChild(d);
 }
 function addAssignRow(a={resName:'',servName:'',start:'',end:''}) {
     const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
-        <td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
-        <td><input type="date" class="a-start" value="${a.start}"></td><td><input type="date" class="a-end" value="${a.end}"></td>
-        <td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
+    tr.innerHTML = `<td><select class="a-res">${yd.rost.ress.map(n=>`<option ${a.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="a-serv">${svcs.map(n=>`<option ${a.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="a-start" value="${a.start}"></td><td><input type="date" class="a-end" value="${a.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
     document.getElementById('hub-assign-body').appendChild(tr);
 }
 function addPtoRow(p={resName:'',servName:'',start:'',end:''}) {
     const yd = getYD(); const svcs = [...document.querySelectorAll('.s-name')].map(i=>i.value);
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td>
-        <td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td>
-        <td><input type="date" class="p-start" value="${p.start}"></td><td><input type="date" class="p-end" value="${p.end}"></td>
-        <td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
+    tr.innerHTML = `<td><select class="p-res">${yd.rost.ress.map(n=>`<option ${p.resName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><select class="p-serv">${svcs.map(n=>`<option ${p.servName===n?'selected':''}>${n}</option>`).join('')}</select></td><td><input type="date" class="p-start" value="${p.start}"></td><td><input type="date" class="p-end" value="${p.end}"></td><td><button class="remove-btn admin-only" onclick="this.closest('tr').remove()">×</button></td>`;
     document.getElementById('hub-pto-body').appendChild(tr);
 }
 function saveHub() {
@@ -330,7 +283,6 @@ function saveHub() {
     document.getElementById('hubOverlay').classList.remove('open'); renderCalendar();
 }
 
-// --- SHIFT EDITOR ---
 function openShiftEditor(k) {
     editK = k; const yd = getYD(); const d = yd.sched[k] || { act:'', am:{at:[],rs:[]}, pm:{at:[],rs:[]} };
     document.getElementById('modalDateLabel').textContent = "Staffing: " + k;
